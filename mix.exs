@@ -2,12 +2,15 @@ defmodule ForestFire.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :forest_fire,
-     version: "0.1.0",
-     elixir: "~> 1.3",
-     build_embedded: Mix.env == :prod,
-     start_permanent: Mix.env == :prod,
-     deps: deps()]
+    [
+      app: :forest_fire,
+      version: "0.1.0",
+      elixir: "~> 1.3",
+      build_embedded: Mix.env == :prod,
+      start_permanent: Mix.env == :prod,
+      deps: deps(),
+      preferred_cli_env: [espec: :test]
+    ]
   end
 
   # Configuration for the OTP application
@@ -28,6 +31,8 @@ defmodule ForestFire.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [
+      { :espec, "~> 1.1", only: :test }
+    ]
   end
 end
