@@ -34,6 +34,20 @@ defmodule ForestFire.CellularAutomaton do
     intersect_lists(cells_in_fire_range, trees)
   end
 
+  def strike_lightnings({ trees, burning_trees, e_c }, p_lightning_prob) do
+    struck_trees = for tree <- trees,
+                       :rand.uniform(100) <= p_lightning_prob, do: tree
+
+    { trees -- struck_trees, burning_trees ++ struck_trees, e_c }
+  end
+
+  def grow_trees({ trees, b_t, empty_cells }, f_growth_prob) do
+    grown_trees = for empty_cell <- empty_cells,
+                      :rand.uniform(100) <= f_growth_prob, do: empty_cell
+
+    { trees ++ grown_trees, b_t, empty_cells -- grown_trees }
+  end
+
   defp intersect_lists(list1, list2) do
     list1_uniq = Enum.uniq(list1)
     list2_uniq = Enum.uniq(list2)
@@ -45,8 +59,8 @@ defmodule ForestFire.CellularAutomaton do
   # def next_turn({ board, params }) do
   #   board1 = burn_trees_down(board)
   #   board2 = spread_fire(board)
-  #   board3 = strike_a_lightning({ board, params })
-  #   board4 = grow_trees({ board, params })
+  #   board3 = strike_a_lightning(board, p_lightning_prob)
+  #   board4 = grow_trees(board, f_growth_prob)
   # end
   #
   # def strike_a_lightning(state) do
