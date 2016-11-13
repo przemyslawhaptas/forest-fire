@@ -7,10 +7,21 @@ defmodule ForestFire.CellularAutomatonSpec do
 
     board:
 
+    2       o
     1     _ _
     0   * * _
    -1   o o *
    -2     o
+
+       -1 0 1
+
+    next_turn: (p_lightning_prob 0, f_growth_prob 0)
+
+    2       o
+    1     _ _
+    0   _ _ _
+   -1   * * _
+   -2     *
 
        -1 0 1
   """
@@ -21,23 +32,65 @@ defmodule ForestFire.CellularAutomatonSpec do
 
   let :board, do: { trees, burning_trees, empty_cells }
 
+  describe "next_turn/1" do
+    subject(described_module().next_turn({ board, { p_lightning_prob, f_growth_prob } }))
+
+    let :p_lightning_prob, do: 0
+    let :f_growth_prob, do: 0
+
+    let :next_trees, do:         MapSet.new([{ 1, 2 }])
+    let :next_burning_trees, do: MapSet.new([{ -1, -1 }, { 0, -2 }, { 0, -1 }])
+    let :next_empty_cells, do:   MapSet.new([{ 0, 1 }, { 1, 0 }, { 1, 1 }, { -1, 0 }, { 0, 0 }, { 1, -1 }])
+
+    it do: is_expected.to eq({ next_trees, next_burning_trees, next_empty_cells })
+  end
+
   describe "burn_trees_down/1" do
     subject(described_module().burn_trees_down(board))
 
-    it do: is_expected.to eq(
-      { trees,
-        %MapSet{},
-        MapSet.new([{ -1, 0 }, { 0, 0 }, { 0, 1 }, { 1, -1 }, { 1, 0 }, { 1, 1 }]) })
+    it do: is_expected.to eq(burning_trees)
   end
 
   describe "spread_fire/1" do
     subject(described_module().spread_fire(board))
 
-    let :unaffected_trees, do: MapSet.new([{ 1, 2 }])
-    let :all_burning_trees, do: MapSet.new(
-      [{ -1, -1 }, { 0, -2 }, { 0, -1 }, { -1, 0 }, { 0, 0 }, { 1, -1 }])
+    it do: is_expected.to eq(MapSet.new([{ -1, -1 }, { 0, -2 }, { 0, -1 }]))
+  end
 
-    it do: is_expected.to eq({ unaffected_trees, all_burning_trees, empty_cells })
+  describe "strike_lightnings/2" do
+    describe "when there is 100% chance of lightning strike" do
+      subject(described_module().strike_lightnings(board, p_lightning_prob))
+
+      let :p_lightning_prob, do: 100
+
+      it do: is_expected.to eq(trees)
+    end
+
+    describe "when there is 0% chance of lightning strike" do
+      subject(described_module().strike_lightnings(board, p_lightning_prob))
+
+      let :p_lightning_prob, do: 0
+
+      it do: is_expected.to eq(%MapSet{})
+    end
+  end
+
+  describe "grow_trees/2" do
+    describe "when there is 100% chance of growing a tree" do
+      subject(described_module().grow_trees(board, f_growth_prob))
+
+      let :f_growth_prob, do: 100
+
+      it do: is_expected.to eq(empty_cells)
+    end
+
+    describe "when there is 0% chance of growing a tree" do
+      subject(described_module().grow_trees(board, f_growth_prob))
+
+      let :f_growth_prob, do: 0
+
+      it do: is_expected.to eq(%MapSet{})
+    end
   end
 
   describe "adjacent_cells/1" do
@@ -57,50 +110,6 @@ defmodule ForestFire.CellularAutomatonSpec do
         { -1, -1 }, { -1, 0 }, { -1, 1 },
         { 0, -1 }, { 0, 1 },
         { 1, -1 }, { 1, 0 }, { 1, 1 }]))
-    end
-  end
-
-  describe "strike_lightnings/2" do
-    describe "when there is 100% chance of lightning strike" do
-      subject(described_module()
-        .strike_lightnings({ trees, burning_trees, empty_cells }, p_lightning_prob))
-
-      let :p_lightning_prob, do: 100
-
-      it do: is_expected.to eq(
-        { %MapSet{},
-          MapSet.union(burning_trees, trees),
-          empty_cells })
-    end
-
-    describe "when there is 0% chance of lightning strike" do
-      subject(described_module().strike_lightnings(board, p_lightning_prob))
-
-      let :p_lightning_prob, do: 0
-
-      it do: is_expected.to eq(board)
-    end
-  end
-
-  describe "grow_trees/2" do
-    describe "when there is 100% chance of growing a tree" do
-      subject(described_module()
-        .grow_trees({ trees, burning_trees, empty_cells }, f_growth_prob))
-
-      let :f_growth_prob, do: 100
-
-      it do: is_expected.to eq(
-        { MapSet.union(trees, empty_cells),
-          burning_trees,
-          %MapSet{} })
-    end
-
-    describe "when there is 0% chance of growing a tree" do
-      subject(described_module().grow_trees(board, f_growth_prob))
-
-      let :f_growth_prob, do: 0
-
-      it do: is_expected.to eq(board)
     end
   end
 end
