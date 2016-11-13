@@ -1,38 +1,59 @@
 defmodule ForestFire.CellularAutomaton do
-  # @automaton_size 10
-  # @p_lightning_prob 5
-  # @f_growth_prob 40
-
-  def next_turn({ board, params }) do
-    board1 = burn_trees_down(board)
-    board2 = spread_fire(board)
-    board3 = strike_a_lightning({ board, params })
-    board4 = grow_trees({ board, params })
-
-    new_board([board1, board2, board3, board4])
-  end
-
   def burn_trees_down({ trees, burning_trees, empty_cells }) do
     { trees, [],  (empty_cells ++ burning_trees) |> Enum.sort }
   end
 
-  def spread_fire(state) do
-    state
+  def spread_fire({ trees, burning_trees, empty_cells }) do
+    newly_ingnited =
+      burning_trees
+      |> adjacent_cells
+      |> affected_trees(trees)
+
+    trees_after = (trees -- newly_ingnited) |> Enum.sort
+    burning_trees_after = (burning_trees ++ newly_ingnited) |> Enum.sort
+
+    { trees_after, burning_trees_after, empty_cells }
   end
 
-  def strike_a_lightning(state) do
-    state
+  def adjacent_cells(cells) when cells |> is_list do
+    all_adjacent_cells =
+      cells
+      |> Enum.reduce([], fn(cell, adjacent_cells_acc) ->
+          adjacent_cells(cell) ++ adjacent_cells_acc end)
+      |> Enum.uniq
+
+    all_adjacent_cells -- cells
+  end
+  def adjacent_cells({ x, y }) do
+    for x_cord <- (x - 1)..(x + 1),
+        y_cord <- (y - 1)..(y + 1),
+        !(x_cord == x && y_cord == y), do: { x_cord, y_cord }
   end
 
-  def grow_trees(state) do
-    state
+  def affected_trees(cells_in_fire_range, trees) do
+    intersect_lists(cells_in_fire_range, trees)
   end
 
-  def init do
+  defp intersect_lists(list1, list2) do
+    list1_uniq = Enum.uniq(list1)
+    list2_uniq = Enum.uniq(list2)
 
+    diff = list1_uniq -- list2_uniq
+    list1_uniq -- diff
   end
 
-  def new_board(_boards) do
-
-  end
+  # def next_turn({ board, params }) do
+  #   board1 = burn_trees_down(board)
+  #   board2 = spread_fire(board)
+  #   board3 = strike_a_lightning({ board, params })
+  #   board4 = grow_trees({ board, params })
+  # end
+  #
+  # def strike_a_lightning(state) do
+  #   state
+  # end
+  #
+  # def grow_trees(state) do
+  #   state
+  # end
 end
