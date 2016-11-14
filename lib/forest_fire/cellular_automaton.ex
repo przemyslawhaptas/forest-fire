@@ -1,4 +1,30 @@
 defmodule ForestFire.CellularAutomaton do
+
+  ########## Move to other modules
+
+  def simulate do
+    p_lightning_prob = 1
+    f_growth_prob = 65
+    params = { p_lightning_prob, f_growth_prob }
+
+    do_simulate({ dense_forest_board({ {-9, 9}, {-9, 9} }), params })
+  end
+  def do_simulate(state = { _, params }) do
+    new_board = next_turn(state)
+    ForestFire.ConsolePrinter.print(new_board, { {-9, 9}, {-9, 9} })
+    :timer.sleep(1000)
+    do_simulate({ new_board, params })
+  end
+
+  def dense_forest_board({ { x_min, x_max }, { y_min, y_max } }) do
+    trees = for x <- x_min .. x_max, y <- y_min .. y_max,
+      do: {x, y}, into: %MapSet{}
+
+    { trees, %MapSet{}, %MapSet{} }
+  end
+
+  ##########
+
   def next_turn({ { trees, burning_trees, empty_cells } = board,
                 { p_lightning_prob, f_growth_prob } }) do
 

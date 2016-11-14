@@ -65,6 +65,7 @@ defmodule ForestFire.ConsolePrinterSpec do
     it do: is_expected.to eq([
       " 1   * _\n",
       " 0   o _\n",
-      "-1\n" ])
+      "-1 \n",
+      "  -1 0 1\n" ])
   end
 end
