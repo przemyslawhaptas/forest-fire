@@ -7,11 +7,11 @@ defmodule ForestFire.ConsolePrinter do
 
   def transform_into_map({ trees, burning_trees, empty_cells }) do
     trees_marked = for tree <- trees,
-      do: { tree, 'O' }, into: %{}
+      do: { tree, IO.ANSI.green_background() <> "0" }, into: %{}
     burning_trees_marked = for burning_tree <- burning_trees,
-      do: { burning_tree, 'x' }, into: %{}
+      do: { burning_tree, IO.ANSI.red_background() <> "x" }, into: %{}
     empty_cells_marked = for empty_cell <- empty_cells,
-      do: { empty_cell, '_' }, into: %{}
+      do: { empty_cell, IO.ANSI.white_background() <> "_" }, into: %{}
 
     Enum.reduce([ trees_marked, burning_trees_marked, empty_cells_marked ],
       &(Map.merge(&1, &2)))
@@ -33,11 +33,11 @@ defmodule ForestFire.ConsolePrinter do
       get_cells_mark(board_map, { x, y }) end)
     spaced_marks_string = to_string_with_spacing(marks_list, spacing)
 
-    leading_string <> spaced_marks_string <> trailing_string
+    leading_string <> spaced_marks_string <> IO.ANSI.reset() <> trailing_string
   end
 
   def get_cells_mark(board_map, coords) do
-    if mark = board_map[coords], do: mark, else: ' '
+    if mark = board_map[coords], do: mark, else: " "
   end
 
   defp number_legend_part(num) when num < 0, do: "#{num}"
@@ -52,11 +52,16 @@ defmodule ForestFire.ConsolePrinter do
     "  " <> spaced_x_axis <> "\n"
   end
 
+  # defp to_string_with_spacing(list, spacing) do
+  #   list
+  #   |> Enum.reduce("", fn (char, acc) ->
+  #       to_string([ spacing, char | acc ]) end)
+  #   |> String.reverse
+  #   |> String.rstrip
+  # end
   defp to_string_with_spacing(list, spacing) do
     list
-    |> Enum.reduce("", fn (char, acc) ->
-        to_string([ spacing, char | acc ]) end)
-    |> String.reverse
+    |> Enum.reduce(fn (str, acc) -> acc <> str <> spacing end)
     |> String.rstrip
   end
 end

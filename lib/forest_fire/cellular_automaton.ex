@@ -3,16 +3,16 @@ defmodule ForestFire.CellularAutomaton do
   ########## Move to other modules
 
   def simulate do
-    p_lightning_prob = 1
-    f_growth_prob = 65
+    p_lightning_prob = 0.05
+    f_growth_prob = 4
     params = { p_lightning_prob, f_growth_prob }
 
-    do_simulate({ ForestFire.Utils.example_board(), params })
+    do_simulate({ ForestFire.Utils.example_board({ {-60, 60}, {-40, 40} }), params })
   end
   def do_simulate(state = { _, params }) do
     new_board = next_turn(state)
-    ForestFire.ConsolePrinter.print(new_board)
-    :timer.sleep(1000)
+    ForestFire.ConsolePrinter.print(new_board, { {-60, 60}, {-40, 40} })
+    :timer.sleep(500)
     do_simulate({ new_board, params })
   end
 
@@ -50,13 +50,13 @@ defmodule ForestFire.CellularAutomaton do
   end
 
   def strike_lightnings({ trees, _, _ }, p_lightning_prob) do
-    for tree <- trees, :rand.uniform(100) <= p_lightning_prob,
+    for tree <- trees, :rand.uniform(10000) <= p_lightning_prob * 100,
     do: tree,
     into: %MapSet{}
   end
 
   def grow_trees({ _, _, empty_cells }, f_growth_prob) do
-    for empty_cell <- empty_cells, :rand.uniform(100) <= f_growth_prob,
+    for empty_cell <- empty_cells, :rand.uniform(10000) <= f_growth_prob * 100,
     do: empty_cell,
     into: %MapSet{}
   end
