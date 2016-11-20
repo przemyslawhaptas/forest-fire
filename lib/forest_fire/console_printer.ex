@@ -1,5 +1,5 @@
 defmodule ForestFire.ConsolePrinter do
-  def print(board, range_bounds) do
+  def print(board, range_bounds \\ { {-9, 9}, {-9, 9} }) do
     board_map = transform_into_map(board)
     lines = build_lines(range_bounds, board_map)
     IO.puts(to_string(lines))
@@ -23,6 +23,7 @@ defmodule ForestFire.ConsolePrinter do
     ++ [ x_axis_legend(x_range_bounds)]
   end
 
+  # Check if having performance issues
   def build_line(y, { x_min, x_max }, board_map) do
     leading_string = number_legend_part(y) <> " "
     trailing_string = "\n"
@@ -51,7 +52,6 @@ defmodule ForestFire.ConsolePrinter do
     "  " <> spaced_x_axis <> "\n"
   end
 
-  # Check if having performance issues
   defp to_string_with_spacing(list, spacing) do
     list
     |> Enum.reduce("", fn (char, acc) ->
