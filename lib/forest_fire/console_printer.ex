@@ -7,11 +7,11 @@ defmodule ForestFire.ConsolePrinter do
 
   def transform_into_map({ trees, burning_trees, empty_cells }) do
     trees_marked = for tree <- trees,
-      do: { tree, IO.ANSI.green_background() <> "0" }, into: %{}
+      do: { tree, "\e[42mo" }, into: %{}
     burning_trees_marked = for burning_tree <- burning_trees,
-      do: { burning_tree, IO.ANSI.red_background() <> "x" }, into: %{}
+      do: { burning_tree, "\e[41mx" }, into: %{}
     empty_cells_marked = for empty_cell <- empty_cells,
-      do: { empty_cell, IO.ANSI.white_background() <> "_" }, into: %{}
+      do: { empty_cell, "\e[47m_" }, into: %{}
 
     Enum.reduce([ trees_marked, burning_trees_marked, empty_cells_marked ],
       &(Map.merge(&1, &2)))
@@ -25,7 +25,7 @@ defmodule ForestFire.ConsolePrinter do
 
   # Check if having performance issues
   def build_line(y, { x_min, x_max }, board_map) do
-    leading_string = number_legend_part(y) <> " "
+    leading_string = "#{number_legend_part(y)} "
     trailing_string = "\n"
     spacing = " "
 
@@ -33,7 +33,7 @@ defmodule ForestFire.ConsolePrinter do
       get_cells_mark(board_map, { x, y }) end)
     spaced_marks_string = to_string_with_spacing(marks_list, spacing)
 
-    leading_string <> spaced_marks_string <> IO.ANSI.reset() <> trailing_string
+    "#{leading_string}#{spaced_marks_string}#{IO.ANSI.reset()}#{trailing_string}"
   end
 
   def get_cells_mark(board_map, coords) do
@@ -49,19 +49,12 @@ defmodule ForestFire.ConsolePrinter do
       |> Enum.map(&number_legend_part/1)
       |> to_string
 
-    "  " <> spaced_x_axis <> "\n"
+    "  #{spaced_x_axis}\n"
   end
 
-  # defp to_string_with_spacing(list, spacing) do
-  #   list
-  #   |> Enum.reduce("", fn (char, acc) ->
-  #       to_string([ spacing, char | acc ]) end)
-  #   |> String.reverse
-  #   |> String.rstrip
-  # end
   defp to_string_with_spacing(list, spacing) do
     list
-    |> Enum.reduce(fn (str, acc) -> acc <> str <> spacing end)
+    |> Enum.reduce(fn (str, acc) -> "#{acc}#{str}#{spacing}" end)
     |> String.rstrip
   end
 end

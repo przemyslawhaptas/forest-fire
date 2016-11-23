@@ -1,4 +1,5 @@
 defmodule ForestFire.CellularAutomaton do
+  import ExProf.Macro
 
   ########## Move to other modules
 
@@ -7,12 +8,23 @@ defmodule ForestFire.CellularAutomaton do
     f_growth_prob = 4
     params = { p_lightning_prob, f_growth_prob }
 
-    do_simulate({ ForestFire.Utils.example_board({ {-60, 60}, {-40, 40} }), params })
+    do_simulate({ ForestFire.Utils.example_board({ {-30, 30}, {-20, 20} }), params })
   end
   def do_simulate(state = { _, params }) do
+    calculation_start_time = System.system_time()
     new_board = next_turn(state)
-    ForestFire.ConsolePrinter.print(new_board, { {-60, 60}, {-40, 40} })
-    :timer.sleep(500)
+    calculation_time = System.system_time() - calculation_start_time
+    IO.puts("calculation_time: #{calculation_time}")
+
+    printing_start_time = System.system_time()
+    # profile do
+      ForestFire.ConsolePrinter.print(new_board, { {-30, 30}, {-20, 20} })
+    # end
+    printing_time = System.system_time() - printing_start_time
+    IO.puts("printing_time: #{printing_time}")
+
+    :timer.sleep(1000)
+
     do_simulate({ new_board, params })
   end
 
