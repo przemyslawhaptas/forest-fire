@@ -2,15 +2,15 @@ defmodule ForestFire.CellularAutomatonSpec do
   use ESpec, async: true
   @doc """
     o - a tree
-    * - a burning tree
+    x - a burning tree
     _ - an empty cell
 
     board:
 
     2       o
     1     _ _
-    0   * * _
-   -1   o o *
+    0   x x _
+   -1   o o x
    -2     o
 
        -1 0 1
@@ -20,8 +20,8 @@ defmodule ForestFire.CellularAutomatonSpec do
     2       o
     1     _ _
     0   _ _ _
-   -1   * * _
-   -2     *
+   -1   x x _
+   -2     x
 
        -1 0 1
   """

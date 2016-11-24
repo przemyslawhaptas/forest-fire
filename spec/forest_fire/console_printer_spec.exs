@@ -3,69 +3,77 @@ defmodule ForestFire.ConsolePrinterSpec do
 
   @doc """
     o - a tree
-    * - a burning tree
+    x - a burning tree
     _ - an empty cell
 
     board:
 
-     1   * _
+     1   x _
      0   o _
-    -1
-
       -1 0 1
 
    """
 
+  let :marked_board_cells, do: MapSet.new([
+    { { 0, 0 }, "\e[42mO " },
+    { { 0, 1 }, "\e[41m* " },
+    { { 1, 0 }, "\e[47m  " },
+    { { 1, 1 }, "\e[47m  " }
+  ])
 
-  let :trees, do: MapSet.new([{ 0, 0 }])
-  let :burning_trees, do: MapSet.new([{ 0, 1 }])
-  let :empty_cells, do: MapSet.new([{ 1, 0 }, { 1, 1 }])
+  let :marked_board_holes_cells, do: MapSet.new([
+    { {-1, 0}, "\e[0m  " },
+    { {-1, 1}, "\e[0m  " }
+  ])
 
-  let :board, do: { trees, burning_trees, empty_cells }
-  let :board_map, do: %{
-    { 0, 0 } => 'o',
-    { 0, 1 } => '*',
-    { 1, 0 } => '_',
-    { 1, 1 } => '_'
-  }
-
-  describe "transform_into_map/1" do
+  describe "mark_board_cells/1" do
     let :trees, do: MapSet.new([{ 0, 0 }])
     let :burning_trees, do: MapSet.new([{ 0, 1 }])
     let :empty_cells, do: MapSet.new([{ 1, 0 }, { 1, 1 }])
 
-    subject(described_module().transform_into_map({ trees, burning_trees, empty_cells }))
+    let :board, do: { trees, burning_trees, empty_cells }
+    let :board_bounds, do: { {-1, 1}, {0, 1} }
 
-    it do: is_expected.to eq(board_map)
+    subject(described_module().mark_board_cells(board))
+
+    it do: is_expected.to eq(marked_board_cells)
   end
 
-  describe "get_cells_mark/2" do
-    subject(described_module().get_cells_mark(board_map, coords))
+  describe "mark_board_holes_cells/1" do
+    let :board_holes, do: MapSet.new([{-1, 0}, {-1, 1}])
 
-    describe "when the cell belongs to the board" do
-      let :coords, do: { 0, 0 }
-      it do: is_expected.to eq('o')
+    subject(described_module().mark_board_holes_cells(board_holes))
+
+    it do: is_expected.to eq(marked_board_holes_cells)
+  end
+
+  describe "build_printable_board/2" do
+    subject(described_module().build_printable_board(marked_board_cells, marked_board_holes_cells))
+
+    let :printable_board, do: ["\e[0m  ", "\e[41m* ", "\e[47m  ", "\e[0m  ", "\e[42mO ", "\e[47m  " ]
+
+    it do: is_expected.to eq(printable_board)
+  end
+
+  describe "compare_cords/2" do
+    it do: expect(described_module().compare_cords({0, 1}, {0, 0})).to eq(true)
+    it do: expect(described_module().compare_cords({0, 1}, {1, 1})).to eq(true)
+
+    it do
+      expect(described_module().compare_cords({1, 1}, {0, 1})).to eq(false)
+      expect(described_module().compare_cords({0, 0}, {0, 1})).to eq(false)
     end
-
-    describe "when the cell doesn't belong to the board" do
-      let :coords, do: { -100, 0 }
-      it do: is_expected.to eq(' ')
-    end
   end
 
-  describe "build_line/3" do
-    subject(described_module().build_line(0, { -1, 1 }, board_map))
+  describe "sort_marked_cells/1" do
+    subject(described_module().sort_marked_cells(marked_cells))
 
-    it do: is_expected.to eq(" 0   o _\n")
-  end
+    let :marked_cells, do: MapSet.union(marked_board_cells, marked_board_holes_cells)
+    let :sorted_marked_cells, do: [
+      { {-1, 1}, "\e[0m  " }, { { 0, 1 }, "\e[41m* " }, { { 1, 1 }, "\e[47m  " },
+      { {-1, 0}, "\e[0m  " }, { { 0, 0 }, "\e[42mO " }, { { 1, 0 }, "\e[47m  " }
+    ]
 
-  describe "build_lines/2" do
-    subject(described_module().build_lines({ { -1, 1 }, { -1, 1 } }, board_map))
-
-    it do: is_expected.to eq([
-      " 1   * _\n",
-      " 0   o _\n",
-      "-1 \n",
-      "  -1 0 1\n" ])
+    it do: is_expected.to eq(sorted_marked_cells)
   end
 end

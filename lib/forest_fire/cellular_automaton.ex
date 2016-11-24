@@ -1,31 +1,32 @@
 defmodule ForestFire.CellularAutomaton do
-  import ExProf.Macro
-
   ########## Move to other modules
 
   def simulate do
+    board_bounds = { {-60, 60}, {-40, 40} }
+    board = ForestFire.Utils.example_board(board_bounds)
+    board_holes = ForestFire.Utils.board_holes(board, board_bounds)
+
     p_lightning_prob = 0.05
     f_growth_prob = 4
     params = { p_lightning_prob, f_growth_prob }
 
-    do_simulate({ ForestFire.Utils.example_board({ {-30, 30}, {-20, 20} }), params })
+    do_simulate({ board, board_holes, board_bounds, params })
   end
-  def do_simulate(state = { _, params }) do
+  def do_simulate({ board, board_holes, board_bounds, params }) do
     calculation_start_time = System.system_time()
-    new_board = next_turn(state)
+    new_board = next_turn({ board, params })
     calculation_time = System.system_time() - calculation_start_time
-    IO.puts("calculation_time: #{calculation_time}")
 
     printing_start_time = System.system_time()
-    # profile do
-      ForestFire.ConsolePrinter.print(new_board, { {-30, 30}, {-20, 20} })
-    # end
+      ForestFire.ConsolePrinter.print(new_board, board_holes, board_bounds)
     printing_time = System.system_time() - printing_start_time
-    IO.puts("printing_time: #{printing_time}")
+
+    IO.puts("calculation_time: #{calculation_time}")
+    IO.puts("printing_time:    #{printing_time}")
 
     :timer.sleep(1000)
 
-    do_simulate({ new_board, params })
+    do_simulate({ new_board, board_holes, board_bounds, params })
   end
 
   ##########

@@ -1,60 +1,54 @@
 defmodule ForestFire.ConsolePrinter do
-  def print(board, range_bounds \\ { {-9, 9}, {-9, 9} }) do
-    board_map = transform_into_map(board)
-    lines = build_lines(range_bounds, board_map)
-    IO.puts(to_string(lines))
+  # import ExProf.Macro
+
+  def print(board, board_holes, board_bounds) do
+    # profile do
+      { { col_min, col_max }, _ } = board_bounds
+      row_length = col_max - col_min + 1
+
+      marked_board_cells = mark_board_cells(board)
+      marked_board_holes_cells = mark_board_holes_cells(board_holes)
+
+      build_printable_board(marked_board_cells, marked_board_holes_cells)
+      |> chunk_rows(row_length)
+      |> :io.format()
+    # end
   end
 
-  def transform_into_map({ trees, burning_trees, empty_cells }) do
-    trees_marked = for tree <- trees,
-      do: { tree, "\e[42mo" }, into: %{}
-    burning_trees_marked = for burning_tree <- burning_trees,
-      do: { burning_tree, "\e[41mx" }, into: %{}
-    empty_cells_marked = for empty_cell <- empty_cells,
-      do: { empty_cell, "\e[47m_" }, into: %{}
+  def mark_board_cells({ trees, burning_trees, empty_cells }) do
+    marked_trees_set = for tree <- trees,
+      do: { tree, "\e[42mO " }, into: %MapSet{}
 
-    Enum.reduce([ trees_marked, burning_trees_marked, empty_cells_marked ],
-      &(Map.merge(&1, &2)))
+    marked_trees_and_burning_trees_set = for burning_tree <- burning_trees,
+      do: { burning_tree, "\e[41m* " }, into: marked_trees_set
+
+    for empty_cell <- empty_cells,
+      do: { empty_cell, "\e[47m  " }, into: marked_trees_and_burning_trees_set
   end
 
-  def build_lines({ x_range_bounds, { y_min, y_max } }, board_map) do
-    Enum.map(y_max .. y_min, fn y ->
-      build_line(y, x_range_bounds, board_map) end)
-    ++ [ x_axis_legend(x_range_bounds)]
+  def mark_board_holes_cells(board_holes) do
+    for hole <- board_holes, do: { hole, "\e[0m  " }, into: %MapSet{}
   end
 
-  # Check if having performance issues
-  def build_line(y, { x_min, x_max }, board_map) do
-    leading_string = "#{number_legend_part(y)} "
-    trailing_string = "\n"
-    spacing = " "
-
-    marks_list = Enum.map(x_min .. x_max, fn x ->
-      get_cells_mark(board_map, { x, y }) end)
-    spaced_marks_string = to_string_with_spacing(marks_list, spacing)
-
-    "#{leading_string}#{spaced_marks_string}#{IO.ANSI.reset()}#{trailing_string}"
+  def build_printable_board(marked_board_cells, marked_board_holes_cells) do
+    marked_board_cells
+    |> MapSet.union(marked_board_holes_cells)
+    |> sort_marked_cells()
+    |> Enum.map(fn { _, string } -> string end)
   end
 
-  def get_cells_mark(board_map, coords) do
-    if mark = board_map[coords], do: mark, else: " "
+  def chunk_rows(printable_board, row_length) do
+    printable_board
+    |> Enum.chunk(row_length)
+    |> Enum.map(fn row -> [row, "\e[0m\n"] end)
   end
 
-  defp number_legend_part(num) when num < 0, do: "#{num}"
-  defp number_legend_part(num), do: " #{num}"
-
-  defp x_axis_legend({ x_min, x_max }) do
-    spaced_x_axis =
-      x_min .. x_max
-      |> Enum.map(&number_legend_part/1)
-      |> to_string
-
-    "  #{spaced_x_axis}\n"
+  def sort_marked_cells(marked_cells) do
+    Enum.sort(marked_cells, fn ({ cords1, _ }, { cords2, _ }) ->
+      compare_cords(cords1, cords2) end)
   end
 
-  defp to_string_with_spacing(list, spacing) do
-    list
-    |> Enum.reduce(fn (str, acc) -> "#{acc}#{str}#{spacing}" end)
-    |> String.rstrip
-  end
+  def compare_cords({ _col1, row1}, { _col2, row2 }) when row1 > row2, do: true
+  def compare_cords({ col1, row1 }, { col2, row2 }) when row1 == row2 and col1 <= col2, do: true
+  def compare_cords(_cords1, _cords2), do: false
 end
