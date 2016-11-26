@@ -94,22 +94,11 @@ defmodule ForestFire.CellularAutomatonSpec do
   end
 
   describe "adjacent_cells/1" do
-    describe "when argument is a set of cells" do
-      subject(described_module().adjacent_cells(MapSet.new([{ 0, 0 }, { 1, 0 }])))
+    subject(described_module().adjacent_cells({ 0, 0 }))
 
-      it do: is_expected.to eq(MapSet.new([
-        { -1, -1 }, { -1, 0 }, { -1, 1 },
-        { 0, -1 }, { 0, 1 },
-        { 1, -1 }, { 1, 1 },
-        { 2, -1 }, { 2, 0 }, { 2, 1 }]))
-    end
-    describe "when argument is a cell" do
-      subject(described_module().adjacent_cells({ 0, 0 }))
-
-      it do: is_expected.to eq(MapSet.new([
-        { -1, -1 }, { -1, 0 }, { -1, 1 },
-        { 0, -1 }, { 0, 1 },
-        { 1, -1 }, { 1, 0 }, { 1, 1 }]))
-    end
+    it do: is_expected.to eq([
+      { -1, -1 }, { -1, 0 }, { -1, 1 },
+      { 0, -1 }, { 0, 1 },
+      { 1, -1 }, { 1, 0 }, { 1, 1 }])
   end
 end

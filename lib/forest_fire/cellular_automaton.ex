@@ -34,10 +34,15 @@ defmodule ForestFire.CellularAutomaton do
   def next_turn({ { trees, burning_trees, empty_cells } = board,
                 { p_lightning_prob, f_growth_prob } }) do
 
-    burnt_trees = burn_trees_down(board)
-    newly_ingnited_trees = spread_fire(board)
-    struck_trees = strike_lightnings(board, p_lightning_prob)
-    grown_trees = grow_trees(board, f_growth_prob)
+    burnt_trees_ref = async(:burn_trees_down, [ board ])
+    newly_ingnited_trees_ref = async(:spread_fire, [ board ])
+    struck_trees_ref = async(:strike_lightnings, [ board, p_lightning_prob ])
+    grown_trees_ref = async(:grow_trees, [ board, f_growth_prob ])
+
+    burnt_trees = Task.await(burnt_trees_ref)
+    newly_ingnited_trees = Task.await(newly_ingnited_trees_ref)
+    struck_trees = Task.await(struck_trees_ref)
+    grown_trees = Task.await(grown_trees_ref)
 
     { trees
       |> MapSet.difference(newly_ingnited_trees)
@@ -58,7 +63,10 @@ defmodule ForestFire.CellularAutomaton do
 
   def spread_fire({ trees, burning_trees, _ }) do
     burning_trees
-    |> adjacent_cells
+    |> Enum.map(fn burning_tree -> adjacent_cells(burning_tree) end)
+    |> List.flatten
+    |> MapSet.new
+    |> MapSet.difference(burning_trees)
     |> MapSet.intersection(trees)
   end
 
@@ -74,17 +82,16 @@ defmodule ForestFire.CellularAutomaton do
     into: %MapSet{}
   end
 
-  def adjacent_cells(%MapSet{} = cells) do
-    cells
-    |> Enum.reduce(%MapSet{}, fn(cell, adjacent_cells_acc) ->
-        MapSet.union(adjacent_cells(cell), adjacent_cells_acc) end)
-    |> MapSet.difference(cells)
-  end
   def adjacent_cells({ x, y }) do
     for x_cord <- (x - 1)..(x + 1),
         y_cord <- (y - 1)..(y + 1),
         !(x_cord == x && y_cord == y),
-    do: { x_cord, y_cord },
-    into: %MapSet{}
+    do: { x_cord, y_cord }
+  end
+
+  defp async(fun_sym, args) do
+    Task.Supervisor.async(
+      { ForestFire.TaskSupervisor, ForestFire.NodeManager.pick_node() },
+      __MODULE__, fun_sym, args)
   end
 end

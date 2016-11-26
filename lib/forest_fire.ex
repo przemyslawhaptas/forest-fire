@@ -8,6 +8,7 @@ defmodule ForestFire do
 
     # Define workers and child supervisors to be supervised
     children = [
+      supervisor(Task.Supervisor, [[ name: ForestFire.TaskSupervisor ]])
       # Starts a worker by calling: ForestFire.Worker.start_link(arg1, arg2, arg3)
       # worker(ForestFire.Worker, [arg1, arg2, arg3]),
     ]
