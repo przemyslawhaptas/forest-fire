@@ -44,26 +44,36 @@ defmodule ForestFire.CellularAutomaton do
     struck_trees = Task.await(struck_trees_ref)
     grown_trees = Task.await(grown_trees_ref)
 
-    { trees
+    new_trees_ref = async(fn () ->
+      trees
       |> MapSet.difference(newly_ingnited_trees)
       |> MapSet.difference(struck_trees)
-      |> MapSet.union(grown_trees),
+      |> MapSet.union(grown_trees) end)
 
+    new_burning_trees_ref = async(fn () ->
       burning_trees
       |> MapSet.difference(burnt_trees)
       |> MapSet.union(newly_ingnited_trees)
-      |> MapSet.union(struck_trees),
+      |> MapSet.union(struck_trees) end)
 
+    new_empty_cells_ref = async(fn () ->
       empty_cells
       |> MapSet.union(burnt_trees)
-      |> MapSet.difference(grown_trees) }
+      |> MapSet.difference(grown_trees) end)
+
+    {
+      Task.await(new_trees_ref),
+      Task.await(new_burning_trees_ref),
+      Task.await(new_empty_cells_ref)
+    }
   end
 
   def burn_trees_down({ _, burning_trees, _ }), do: burning_trees
 
   def spread_fire({ trees, burning_trees, _ }) do
     burning_trees
-    |> Enum.map(fn burning_tree -> adjacent_cells(burning_tree) end)
+    |> Enum.map(fn burning_tree -> async(:adjacent_cells, [ burning_tree ]) end)
+    |> Enum.map(fn adjacent_cells_ref -> Task.await(adjacent_cells_ref) end)
     |> List.flatten
     |> MapSet.new
     |> MapSet.difference(burning_trees)
@@ -89,9 +99,13 @@ defmodule ForestFire.CellularAutomaton do
     do: { x_cord, y_cord }
   end
 
-  defp async(fun_sym, args) do
+  defp async(module \\ __MODULE__, fun_sym, args) do
     Task.Supervisor.async(
       { ForestFire.TaskSupervisor, ForestFire.NodeManager.pick_node() },
-      __MODULE__, fun_sym, args)
+      module, fun_sym, args)
+  end
+  defp async(fun) do
+    Task.Supervisor.async(
+      { ForestFire.TaskSupervisor, ForestFire.NodeManager.pick_node() }, fun)
   end
 end
