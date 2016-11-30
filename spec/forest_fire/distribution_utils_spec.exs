@@ -1,4 +1,4 @@
-defmodule ForestFire.NodeManagerSpec do
+defmodule ForestFire.DistributionUtilsSpec do
   use ESpec
 
   before do: allow(described_module()).to accept(

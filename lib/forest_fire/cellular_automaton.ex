@@ -1,4 +1,5 @@
 defmodule ForestFire.CellularAutomaton do
+  import ForestFire.DistributionUtils
   ########## Move to other modules
 
   def simulate do
@@ -97,15 +98,5 @@ defmodule ForestFire.CellularAutomaton do
         y_cord <- (y - 1)..(y + 1),
         !(x_cord == x && y_cord == y),
     do: { x_cord, y_cord }
-  end
-
-  defp async(module \\ __MODULE__, fun_sym, args) do
-    Task.Supervisor.async(
-      { ForestFire.TaskSupervisor, ForestFire.NodeManager.pick_node() },
-      module, fun_sym, args)
-  end
-  defp async(fun) do
-    Task.Supervisor.async(
-      { ForestFire.TaskSupervisor, ForestFire.NodeManager.pick_node() }, fun)
   end
 end
