@@ -1,4 +1,5 @@
 defmodule ForestFire.CellularAutomaton do
+  import ForestFire.DistributionUtils
   ########## Move to other modules
 
   def simulate do
@@ -34,31 +35,49 @@ defmodule ForestFire.CellularAutomaton do
   def next_turn({ { trees, burning_trees, empty_cells } = board,
                 { p_lightning_prob, f_growth_prob } }) do
 
-    burnt_trees = burn_trees_down(board)
-    newly_ingnited_trees = spread_fire(board)
-    struck_trees = strike_lightnings(board, p_lightning_prob)
-    grown_trees = grow_trees(board, f_growth_prob)
+    burnt_trees_ref = async(:burn_trees_down, [ board ])
+    newly_ingnited_trees_ref = async(:spread_fire, [ board ])
+    struck_trees_ref = async(:strike_lightnings, [ board, p_lightning_prob ])
+    grown_trees_ref = async(:grow_trees, [ board, f_growth_prob ])
 
-    { trees
+    burnt_trees = Task.await(burnt_trees_ref)
+    newly_ingnited_trees = Task.await(newly_ingnited_trees_ref)
+    struck_trees = Task.await(struck_trees_ref)
+    grown_trees = Task.await(grown_trees_ref)
+
+    new_trees_ref = async(fn () ->
+      trees
       |> MapSet.difference(newly_ingnited_trees)
       |> MapSet.difference(struck_trees)
-      |> MapSet.union(grown_trees),
+      |> MapSet.union(grown_trees) end)
 
+    new_burning_trees_ref = async(fn () ->
       burning_trees
       |> MapSet.difference(burnt_trees)
       |> MapSet.union(newly_ingnited_trees)
-      |> MapSet.union(struck_trees),
+      |> MapSet.union(struck_trees) end)
 
+    new_empty_cells_ref = async(fn () ->
       empty_cells
       |> MapSet.union(burnt_trees)
-      |> MapSet.difference(grown_trees) }
+      |> MapSet.difference(grown_trees) end)
+
+    {
+      Task.await(new_trees_ref),
+      Task.await(new_burning_trees_ref),
+      Task.await(new_empty_cells_ref)
+    }
   end
 
   def burn_trees_down({ _, burning_trees, _ }), do: burning_trees
 
   def spread_fire({ trees, burning_trees, _ }) do
     burning_trees
-    |> adjacent_cells
+    |> Enum.map(fn burning_tree -> async(:adjacent_cells, [ burning_tree ]) end)
+    |> Enum.map(fn adjacent_cells_ref -> Task.await(adjacent_cells_ref) end)
+    |> List.flatten
+    |> MapSet.new
+    |> MapSet.difference(burning_trees)
     |> MapSet.intersection(trees)
   end
 
@@ -74,17 +93,10 @@ defmodule ForestFire.CellularAutomaton do
     into: %MapSet{}
   end
 
-  def adjacent_cells(%MapSet{} = cells) do
-    cells
-    |> Enum.reduce(%MapSet{}, fn(cell, adjacent_cells_acc) ->
-        MapSet.union(adjacent_cells(cell), adjacent_cells_acc) end)
-    |> MapSet.difference(cells)
-  end
   def adjacent_cells({ x, y }) do
     for x_cord <- (x - 1)..(x + 1),
         y_cord <- (y - 1)..(y + 1),
         !(x_cord == x && y_cord == y),
-    do: { x_cord, y_cord },
-    into: %MapSet{}
+    do: { x_cord, y_cord }
   end
 end
