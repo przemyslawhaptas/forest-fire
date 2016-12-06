@@ -15,6 +15,10 @@ defmodule ForestFire.DistributionUtils do
     Enum.random(available_nodes())
   end
 
+  def this_node do
+    Node.self
+  end
+
   defp available_nodes do
     [Node.self | Node.list]
   end
