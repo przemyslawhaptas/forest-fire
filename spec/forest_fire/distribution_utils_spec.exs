@@ -2,7 +2,7 @@ defmodule ForestFire.DistributionUtilsSpec do
   use ESpec
 
   before do: allow(described_module()).to accept(
-    :available_nodes, fn () -> Node.self end)
+    :all_nodes, fn () -> Node.self end)
 
   describe "random_node/0" do
     subject(described_module().random_node())
