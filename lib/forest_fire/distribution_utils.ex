@@ -1,4 +1,6 @@
 defmodule ForestFire.DistributionUtils do
+  @slave_nodes [:slave1@Przemek, :slave2@Przemek, :slave3@Przemek]
+
   def async(module \\ ForestFire.CellularAutomaton, fun_sym, args) do
     Task.Supervisor.async({ForestFire.TaskSupervisor, pick_node()},
       module, fun_sym, args)
@@ -12,8 +14,7 @@ defmodule ForestFire.DistributionUtils do
   end
 
   def slaves_first do
-    possible_slaves = Application.get_env(:forest_fire, :slave_nodes)
-    available_slaves = MapSet.new(possible_slaves)
+    available_slaves = MapSet.new(@slave_nodes)
       |> MapSet.intersection(MapSet.new(all_nodes()))
       |> MapSet.to_list
 

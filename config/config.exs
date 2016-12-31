@@ -9,10 +9,7 @@ use Mix.Config
 # 3rd-party users, it should be done in your "mix.exs" file.
 
 # You can configure for your application as:
-#
-    config :forest_fire, server_node: :server@Przemek
-    config :forest_fire, visualization_node: :visualization@Przemek
-    config :forest_fire, slave_nodes: [:slave1@Przemek, :slave2@Przemek, :slave3@Przemek]
+
 #
 # And access this configuration in your application as:
 #
