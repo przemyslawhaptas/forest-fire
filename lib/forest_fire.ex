@@ -24,4 +24,24 @@ defmodule ForestFire do
 
     Supervisor.start_link(children, opts)
   end
+
+  def start_simulation do
+    ForestFire.SimulationServer.start_simulation()
+  end
+
+  def pause_simulation do
+    ForestFire.SimulationServer.pause_simulation()
+  end
+
+  def stop_simulation do
+    ForestFire.SimulationServer.stop_simulation()
+  end
+
+  def start_visualization do
+    ForestFire.VisualizationAgent.start_visualization()
+  end
+
+  def stop_visualization do
+    ForestFire.VisualizationAgent.stop_visualization()
+  end
 end

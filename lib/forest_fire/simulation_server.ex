@@ -2,19 +2,18 @@ defmodule ForestFire.SimulationServer do
   use GenServer
   require Logger
 
-  # only one node with the server - handles the whole board
   @name {:global, __MODULE__}
   @turn_time 1000
 
   def start_link do
-    result = GenServer.start_link(__MODULE__, empty_state(), name: @name)
+    result = GenServer.start_link(__MODULE__, example_state(), name: @name)
 
     case result do
       {:ok, pid} ->
         Logger.info("Started #{__MODULE__}.")
         {:ok, pid}
       {:error, {:already_started, pid}} ->
-        Logger.info("#{__MODULE__} already started on another node.")
+        Logger.info("#{__MODULE__} already started.")
         {:ok, pid}
     end
   end
@@ -90,7 +89,7 @@ defmodule ForestFire.SimulationServer do
   def handle_cast({:setup_board, {new_board, new_board_bounds}}, state) do
     {_board_setup, params, tref} = state
 
-    new_board_holes = ForestFire.Utils.board_holes(new_board, new_board_bounds)
+    new_board_holes = board_holes(new_board, new_board_bounds)
     new_board_setup = {new_board, new_board_holes, new_board_bounds}
 
     {:noreply, {new_board_setup, params, tref}}
@@ -122,20 +121,21 @@ defmodule ForestFire.SimulationServer do
     new_board_ref = Task.Supervisor.async({ForestFire.TaskSupervisor, Node.self()},
       ForestFire.CellularAutomaton, :next_turn, [{board, params}])
     new_board_setup = {Task.await(new_board_ref), board_holes, board_bounds}
-    
+
     {:noreply, {new_board_setup, params, tref}}
   end
 
   ## Helper functions
 
-  defp empty_state do
-    board_bounds = {{0, 0}, {0, 0}}
-    empty_board = {%MapSet{}, %MapSet{}, %MapSet{}}
-    board_holes = %MapSet{}
+  def empty_state do
+    ForestFire.SimulationServerUtils.empty_state
+  end
 
-    empty_params = {0, 0}
-    tref = nil
+  def example_state do
+    ForestFire.SimulationServerUtils.example_state
+  end
 
-    {{empty_board, board_holes, board_bounds}, empty_params, tref}
+  def board_holes(board, bounds) do
+    ForestFire.SimulationServerUtils.board_holes(board, bounds)
   end
 end

@@ -1,6 +1,4 @@
 defmodule ForestFire.CellularAutomaton do
-  import ForestFire.DistributionUtils
-
   def next_turn({{trees, burning_trees, empty_cells} = board,
                 {p_lightning_prob, f_growth_prob}}) do
 
@@ -42,8 +40,7 @@ defmodule ForestFire.CellularAutomaton do
 
   def spread_fire({trees, burning_trees, _}) do
     burning_trees
-    |> Enum.map(fn burning_tree -> async(:adjacent_cells, [burning_tree]) end) # TODO: remove this distributed async in favor of calcing on this node
-    |> Enum.map(fn adjacent_cells_ref -> Task.await(adjacent_cells_ref) end)
+    |> Enum.map(fn burning_tree -> adjacent_cells(burning_tree) end)
     |> List.flatten
     |> MapSet.new
     |> MapSet.difference(burning_trees)
@@ -67,5 +64,15 @@ defmodule ForestFire.CellularAutomaton do
         y_cord <- (y - 1)..(y + 1),
         !(x_cord == x && y_cord == y),
     do: {x_cord, y_cord}
+  end
+
+  ## Helper functions
+
+  defp async(fun_sym, args) do
+    Task.Supervisor.async({ForestFire.TaskSupervisor, Node.self()},
+      ForestFire.CellularAutomaton, fun_sym, args)
+  end
+  defp async(fun) do
+    Task.Supervisor.async({ForestFire.TaskSupervisor, Node.self()}, fun)
   end
 end

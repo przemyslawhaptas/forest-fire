@@ -11,8 +11,9 @@ defmodule ForestFire.VisualizationAgent do
       {:ok, pid} ->
         Logger.info("Started #{__MODULE__}.")
         {:ok, pid}
-      err ->
-        err
+      {:error, {:already_started, pid}} ->
+        Logger.info("#{__MODULE__} already started.")
+        {:ok, pid}
     end
   end
 
