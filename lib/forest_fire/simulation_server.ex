@@ -19,7 +19,7 @@ defmodule ForestFire.SimulationServer do
     end
   end
 
-  # API
+  ## API
 
   def start_simulation do
     GenServer.call(@name, :start_simulation)
@@ -61,7 +61,7 @@ defmodule ForestFire.SimulationServer do
     GenServer.cast(@name, :next_turn)
   end
 
-  # Callbacks
+  ## Callbacks
 
   def handle_call(:start_simulation, _from, {board_setup, params, nil}) do
     {:ok, tref} = :timer.apply_interval(@turn_time, __MODULE__, :next_turn, [])
@@ -119,12 +119,14 @@ defmodule ForestFire.SimulationServer do
   end
 
   def handle_cast(:next_turn, {{board, board_holes, board_bounds}, params, tref}) do
-    new_board_ref = ForestFire.DistributionUtils.async(:next_turn, [{board, params}])
+    new_board_ref = Task.Supervisor.async({ForestFire.TaskSupervisor, Node.self()},
+      ForestFire.CellularAutomaton, :next_turn, [{board, params}])
     new_board_setup = {Task.await(new_board_ref), board_holes, board_bounds}
+    
     {:noreply, {new_board_setup, params, tref}}
   end
 
-  #
+  ## Helper functions
 
   defp empty_state do
     board_bounds = {{0, 0}, {0, 0}}

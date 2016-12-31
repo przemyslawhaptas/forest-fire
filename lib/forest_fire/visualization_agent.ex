@@ -2,9 +2,10 @@ defmodule ForestFire.VisualizationAgent do
   require Logger
 
   @visualization_rate 1000
+  @name {:global, __MODULE__}
 
   def start_link do
-    result = Agent.start_link(fn -> nil end, name: __MODULE__)
+    result = Agent.start_link(fn -> nil end, name: @name)
 
     case result do
       {:ok, pid} ->
@@ -16,7 +17,7 @@ defmodule ForestFire.VisualizationAgent do
   end
 
   def start_visualization do
-    Agent.get_and_update(__MODULE__, __MODULE__, :do_start_visualization, [])
+    Agent.get_and_update(@name, __MODULE__, :do_start_visualization, [])
   end
 
   def do_start_visualization(nil) do
@@ -31,7 +32,7 @@ defmodule ForestFire.VisualizationAgent do
   end
 
   def stop_visualization do
-    Agent.get_and_update(__MODULE__, __MODULE__, :do_stop_visualization, [])
+    Agent.get_and_update(@name, __MODULE__, :do_stop_visualization, [])
   end
 
   def do_stop_visualization(nil), do: {:visualization_not_started, nil}
