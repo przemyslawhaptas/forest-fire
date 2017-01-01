@@ -3,7 +3,7 @@ defmodule ForestFire.SimulationServer do
   require Logger
 
   @name {:global, __MODULE__}
-  @turn_time 1000
+  @turn_time 500
 
   def start_link do
     result = GenServer.start_link(__MODULE__, example_state(), name: @name)
