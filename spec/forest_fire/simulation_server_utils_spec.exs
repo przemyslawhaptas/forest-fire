@@ -22,7 +22,7 @@ defmodule ForestFire.SimulationServerUtilsSpec do
   let :board_bounds, do: {{-1, 1}, {0, 1}}
 
   describe "example_board/1" do
-    subject(described_module().example_board({{0, 1}, {0, 0}}))
+    subject(described_module().example_board({{0, 1}, {0, 0}}, %MapSet{}))
 
     it do: is_expected.to eq({MapSet.new([{0, 0}, {1, 0}]), %MapSet{}, %MapSet{}})
   end
