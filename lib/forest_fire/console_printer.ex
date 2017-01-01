@@ -22,7 +22,7 @@ defmodule ForestFire.ConsolePrinter do
   end
 
   def mark_board_holes_cells(board_holes) do
-    for hole <- board_holes, do: {hole, "\e[0m  "}, into: %MapSet{}
+    for hole <- board_holes, do: {hole, "\e[48;5;80m  "}, into: %MapSet{}
   end
 
   def one_row_printable_board(marked_board_cells, marked_board_holes_cells) do

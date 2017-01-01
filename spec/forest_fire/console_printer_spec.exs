@@ -22,8 +22,8 @@ defmodule ForestFire.ConsolePrinterSpec do
   ])
 
   let :marked_board_holes_cells, do: MapSet.new([
-    {{-1, 0}, "\e[0m  "},
-    {{-1, 1}, "\e[0m  "}
+    {{-1, 0}, "\e[48;5;80m  "},
+    {{-1, 1}, "\e[48;5;80m  "}
   ])
 
   describe "mark_board_cells/1" do
@@ -50,7 +50,7 @@ defmodule ForestFire.ConsolePrinterSpec do
   describe "one_row_printable_board/2" do
     subject(described_module().one_row_printable_board(marked_board_cells, marked_board_holes_cells))
 
-    let :printable_board, do: ["\e[0m  ", "\e[41m* ", "\e[47m  ", "\e[0m  ", "\e[42mO ", "\e[47m  "]
+    let :printable_board, do: ["\e[48;5;80m  ", "\e[41m* ", "\e[47m  ", "\e[48;5;80m  ", "\e[42mO ", "\e[47m  "]
 
     it do: is_expected.to eq(printable_board)
   end
@@ -70,8 +70,8 @@ defmodule ForestFire.ConsolePrinterSpec do
 
     let :marked_cells, do: MapSet.union(marked_board_cells, marked_board_holes_cells)
     let :sorted_marked_cells, do: [
-      {{-1, 1}, "\e[0m  "}, {{0, 1}, "\e[41m* "}, {{1, 1}, "\e[47m  "},
-      {{-1, 0}, "\e[0m  "}, {{0, 0}, "\e[42mO "}, {{1, 0}, "\e[47m  "}
+      {{-1, 1}, "\e[48;5;80m  "}, {{0, 1}, "\e[41m* "}, {{1, 1}, "\e[47m  "},
+      {{-1, 0}, "\e[48;5;80m  "}, {{0, 0}, "\e[42mO "}, {{1, 0}, "\e[47m  "}
     ]
 
     it do: is_expected.to eq(sorted_marked_cells)
