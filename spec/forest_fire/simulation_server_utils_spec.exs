@@ -1,4 +1,4 @@
-defmodule ForestFire.UtilsSpec do
+defmodule ForestFire.SimulationServerUtilsSpec do
   use ESpec, async: true
 
   @doc """

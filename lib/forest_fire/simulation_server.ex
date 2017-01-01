@@ -86,15 +86,6 @@ defmodule ForestFire.SimulationServer do
     {:reply, :simulation_stopped, empty_state()}
   end
 
-  def handle_cast({:setup_board, {new_board, new_board_bounds}}, state) do
-    {_board_setup, params, tref} = state
-
-    new_board_holes = board_holes(new_board, new_board_bounds)
-    new_board_setup = {new_board, new_board_holes, new_board_bounds}
-
-    {:noreply, {new_board_setup, params, tref}}
-  end
-
   def handle_call(:get_board, _from, {board_setup, _params, _tref} = state) do
     {board, _board_holes, _board_bounds} = board_setup
     {:reply, board, state}
@@ -109,12 +100,21 @@ defmodule ForestFire.SimulationServer do
     {:reply, params, state}
   end
 
+  def handle_call(:get_board_setup, _from, {board_setup, _params, _tref} = state) do
+    {:reply, board_setup, state}
+  end
+
   def handle_cast({:set_params, new_params}, {board_setup, _params, tref}) do
     {:noreply, {board_setup, new_params, tref}}
   end
 
-  def handle_call(:get_board_setup, _from, {board_setup, _params, _tref} = state) do
-    {:reply, board_setup, state}
+  def handle_cast({:setup_board, {new_board, new_board_bounds}}, state) do
+    {_board_setup, params, tref} = state
+
+    new_board_holes = board_holes(new_board, new_board_bounds)
+    new_board_setup = {new_board, new_board_holes, new_board_bounds}
+
+    {:noreply, {new_board_setup, params, tref}}
   end
 
   def handle_cast(:next_turn, {{board, board_holes, board_bounds}, params, tref}) do
