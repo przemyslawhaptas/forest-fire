@@ -14,7 +14,6 @@ defmodule ForestFire.SimulationServerUtilsSpec do
 
    """
 
-
   let :trees, do: MapSet.new([{0, 0}])
   let :burning_trees, do: MapSet.new([{0, 1}])
   let :empty_cells, do: MapSet.new([{1, 0}, {1, 1}])

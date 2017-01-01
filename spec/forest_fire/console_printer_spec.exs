@@ -47,8 +47,8 @@ defmodule ForestFire.ConsolePrinterSpec do
     it do: is_expected.to eq(marked_board_holes_cells)
   end
 
-  describe "build_printable_board/2" do
-    subject(described_module().build_printable_board(marked_board_cells, marked_board_holes_cells))
+  describe "one_row_printable_board/2" do
+    subject(described_module().one_row_printable_board(marked_board_cells, marked_board_holes_cells))
 
     let :printable_board, do: ["\e[0m  ", "\e[41m* ", "\e[47m  ", "\e[0m  ", "\e[42mO ", "\e[47m  "]
 
@@ -75,5 +75,22 @@ defmodule ForestFire.ConsolePrinterSpec do
     ]
 
     it do: is_expected.to eq(sorted_marked_cells)
+  end
+
+  describe "row_length/1" do
+    subject(described_module().row_length(board_bounds))
+
+    let :board_bounds, do: {{1, 3}, {1, 3}}
+
+    it do: is_expected.to eq(3)
+  end
+
+  describe "chunk_rows/2" do
+    subject(described_module().chunk_rows(one_row_printable_board, row_length))
+
+    let :one_row_printable_board, do: [1, 2, 3, 4]
+    let :row_length, do: 2
+
+    it do: is_expected.to eq([[[1, 2], "\e[0m\n"], [[3, 4], "\e[0m\n"]])
   end
 end
