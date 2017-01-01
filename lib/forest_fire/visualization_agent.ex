@@ -1,7 +1,7 @@
 defmodule ForestFire.VisualizationAgent do
   require Logger
 
-  @visualization_rate 1000
+  @visualization_rate 500
   @name {:global, __MODULE__}
 
   def start_link do
@@ -40,5 +40,16 @@ defmodule ForestFire.VisualizationAgent do
   def do_stop_visualization(tref) do
     {:ok, :cancel} = :timer.cancel(tref)
     {:visualization_stopped, nil}
+  end
+
+  def set_visualization_rate(milis) do
+    Agent.update(@name, __MODULE__, :do_set_visualization_rate, [milis])
+  end
+
+  def do_set_visualization_rate(tref, milis) do
+    if tref, do: {:ok, :cancel} = :timer.cancel(tref)
+    {:ok, tref} = :timer.apply_interval(milis, __MODULE__, :visualize, [])
+
+    tref
   end
 end
