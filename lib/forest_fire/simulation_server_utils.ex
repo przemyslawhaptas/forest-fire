@@ -23,8 +23,8 @@ defmodule ForestFire.SimulationServerUtils do
   end
 
   def example_state do
-    board_bounds = example_board_bounds
-    board = example_board(example_board_bounds)
+    board_bounds = example_board_bounds()
+    board = example_board(example_board_bounds, example_board_holes())
     board_holes = board_holes(board, board_bounds)
     params = example_params
     tref = nil
@@ -32,15 +32,36 @@ defmodule ForestFire.SimulationServerUtils do
     {{board, board_holes, board_bounds}, params, tref}
   end
 
-  def example_board({{x_min, x_max}, {y_min, y_max}}) do
+  def example_board({{x_min, x_max}, {y_min, y_max}}, board_holes) do
     trees = for x <- x_min .. x_max, y <- y_min .. y_max,
       do: {x, y}, into: %MapSet{}
 
-    {trees, %MapSet{}, %MapSet{}}
+
+    {trees |> MapSet.difference(board_holes), %MapSet{}, %MapSet{}}
   end
 
   def example_board_bounds do
     {{-50, 50}, {-30, 30}}
+  end
+
+  def example_board_holes do
+    outter_circle_1 = for x <- -15 .. 15, y <- -11 .. 12,
+      x * x + y * y <= 169,
+      do: {x - 45, y + 30}, into: %MapSet{}
+    inner_circle_1 = for x <- -2 .. 2, y <- -1 .. 1,
+      x * x + y * y <= 4,
+      do: {x - 41, y + 28}, into: %MapSet{}
+    outter_circle_2 = for x <- -15 .. 15, y <- -13 .. 13,
+      x * x + y * y <= 225,
+      do: {x + 42, y - 30}, into: %MapSet{}
+    outter_circle_3 = for x <- -15 .. 15, y <- -13 .. 13,
+      x * x + y * y <= 225,
+      do: {x + 50, y - 23}, into: %MapSet{}
+
+    outter_circle_1
+    |> MapSet.difference(inner_circle_1)
+    |> MapSet.union(outter_circle_2)
+    |> MapSet.union(outter_circle_3)
   end
 
   def example_params do
