@@ -17,8 +17,10 @@ defmodule ForestFire.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger],
-     mod: {ForestFire, []}]
+    [
+      applications: [:logger],
+      mod: {ForestFire, []}
+    ]
   end
 
   # Dependencies can be Hex packages:
@@ -32,8 +34,8 @@ defmodule ForestFire.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      { :espec, "~> 1.1", only: :test },
-      { :exprof, "~> 0.2.0" }
+      {:espec, "~> 1.1", only: :test},
+      {:exprof, "~> 0.2.0"}
     ]
   end
 end

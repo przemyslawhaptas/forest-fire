@@ -1,21 +1,47 @@
 defmodule ForestFire do
   use Application
+  require Logger
 
-  # See http://elixir-lang.org/docs/stable/elixir/Application.html
-  # for more information on OTP Applications
-  def start(_type, _args) do
+  def start(type, _args) do
     import Supervisor.Spec, warn: false
 
-    # Define workers and child supervisors to be supervised
     children = [
-      supervisor(Task.Supervisor, [[ name: ForestFire.TaskSupervisor ]])
-      # Starts a worker by calling: ForestFire.Worker.start_link(arg1, arg2, arg3)
-      # worker(ForestFire.Worker, [arg1, arg2, arg3]),
+      supervisor(Task.Supervisor, [[name: ForestFire.TaskSupervisor]]),
+      worker(ForestFire.VisualizationAgent, []),
+      worker(ForestFire.SimulationServer, [])
     ]
 
-    # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
-    # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: ForestFire.Supervisor]
+    case type do
+      :normal ->
+        Logger.info("Application is started on #{node()}")
+      {:takeover, old_node} ->
+        Logger.info("#{node()} is taking over #{old_node}")
+      {:failover, old_node} ->
+        Logger.info("#{old_node} is failing over to #{node()}")
+    end
+
+    opts = [strategy: :one_for_one, name: {:global, ForestFire.Supervisor}]
+
     Supervisor.start_link(children, opts)
+  end
+
+  def start_simulation do
+    ForestFire.SimulationServer.start_simulation()
+  end
+
+  def pause_simulation do
+    ForestFire.SimulationServer.pause_simulation()
+  end
+
+  def stop_simulation do
+    ForestFire.SimulationServer.stop_simulation()
+  end
+
+  def start_visualization do
+    ForestFire.VisualizationAgent.start_visualization()
+  end
+
+  def stop_visualization do
+    ForestFire.VisualizationAgent.stop_visualization()
   end
 end

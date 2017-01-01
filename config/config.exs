@@ -9,8 +9,7 @@ use Mix.Config
 # 3rd-party users, it should be done in your "mix.exs" file.
 
 # You can configure for your application as:
-#
-#     config :forest_fire, key: :value
+
 #
 # And access this configuration in your application as:
 #

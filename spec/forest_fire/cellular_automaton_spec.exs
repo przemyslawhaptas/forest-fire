@@ -26,23 +26,23 @@ defmodule ForestFire.CellularAutomatonSpec do
        -1 0 1
   """
 
-  let :trees, do:         MapSet.new([{ -1, -1 }, { 0, -2 }, { 0, -1 }, { 1, 2 }])
-  let :burning_trees, do: MapSet.new([{ -1, 0 }, { 0, 0 }, { 1, -1 }])
-  let :empty_cells, do:   MapSet.new([{ 0, 1 }, { 1, 0 }, { 1, 1 }])
+  let :trees, do:         MapSet.new([{-1, -1}, {0, -2}, {0, -1}, {1, 2}])
+  let :burning_trees, do: MapSet.new([{-1, 0}, {0, 0}, {1, -1}])
+  let :empty_cells, do:   MapSet.new([{0, 1}, {1, 0}, {1, 1}])
 
-  let :board, do: { trees, burning_trees, empty_cells }
+  let :board, do: {trees, burning_trees, empty_cells}
 
   describe "next_turn/1" do
-    subject(described_module().next_turn({ board, { p_lightning_prob, f_growth_prob } }))
+    subject(described_module().next_turn({board, {p_lightning_prob, f_growth_prob}}))
 
     let :p_lightning_prob, do: 0
     let :f_growth_prob, do: 0
 
-    let :next_trees, do:         MapSet.new([{ 1, 2 }])
-    let :next_burning_trees, do: MapSet.new([{ -1, -1 }, { 0, -2 }, { 0, -1 }])
-    let :next_empty_cells, do:   MapSet.new([{ 0, 1 }, { 1, 0 }, { 1, 1 }, { -1, 0 }, { 0, 0 }, { 1, -1 }])
+    let :next_trees, do:         MapSet.new([{1, 2}])
+    let :next_burning_trees, do: MapSet.new([{-1, -1}, {0, -2}, {0, -1}])
+    let :next_empty_cells, do:   MapSet.new([{0, 1}, {1, 0}, {1, 1}, {-1, 0}, {0, 0}, {1, -1}])
 
-    it do: is_expected.to eq({ next_trees, next_burning_trees, next_empty_cells })
+    it do: is_expected.to eq({next_trees, next_burning_trees, next_empty_cells})
   end
 
   describe "burn_trees_down/1" do
@@ -54,7 +54,7 @@ defmodule ForestFire.CellularAutomatonSpec do
   describe "spread_fire/1" do
     subject(described_module().spread_fire(board))
 
-    it do: is_expected.to eq(MapSet.new([{ -1, -1 }, { 0, -2 }, { 0, -1 }]))
+    it do: is_expected.to eq(MapSet.new([{-1, -1}, {0, -2}, {0, -1}]))
   end
 
   describe "strike_lightnings/2" do
@@ -94,11 +94,11 @@ defmodule ForestFire.CellularAutomatonSpec do
   end
 
   describe "adjacent_cells/1" do
-    subject(described_module().adjacent_cells({ 0, 0 }))
+    subject(described_module().adjacent_cells({0, 0}))
 
     it do: is_expected.to eq([
-      { -1, -1 }, { -1, 0 }, { -1, 1 },
-      { 0, -1 }, { 0, 1 },
-      { 1, -1 }, { 1, 0 }, { 1, 1 }])
+      {-1, -1}, {-1, 0}, {-1, 1},
+      {0, -1}, {0, 1},
+      {1, -1}, {1, 0}, {1, 1}])
   end
 end
