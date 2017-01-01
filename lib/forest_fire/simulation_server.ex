@@ -56,6 +56,10 @@ defmodule ForestFire.SimulationServer do
     GenServer.cast(@name, {:set_params, params})
   end
 
+  def set_turn_time(milis) do
+    GenServer.cast(@name, {:set_turn_time, milis})
+  end
+
   def next_turn do
     GenServer.cast(@name, :next_turn)
   end
@@ -83,7 +87,7 @@ defmodule ForestFire.SimulationServer do
   end
   def handle_call(:stop_simulation, _from, {_board_setup, _params, tref}) do
     {:ok, :cancel} = :timer.cancel(tref)
-    {:reply, :simulation_stopped, empty_state()}
+    {:reply, :simulation_stopped, example_state()}
   end
 
   def handle_call(:get_board, _from, {board_setup, _params, _tref} = state) do
@@ -115,6 +119,13 @@ defmodule ForestFire.SimulationServer do
     new_board_setup = {new_board, new_board_holes, new_board_bounds}
 
     {:noreply, {new_board_setup, params, tref}}
+  end
+
+  def handle_cast({:set_turn_time, milis}, {board_setup, params, tref}) do
+    if tref, do: {:ok, :cancel} = :timer.cancel(tref)
+    {:ok, new_tref} = :timer.apply_interval(milis, __MODULE__, :next_turn, [])
+
+    {:noreply, {board_setup, params, new_tref}}
   end
 
   def handle_cast(:next_turn, {{board, board_holes, board_bounds}, params, tref}) do
