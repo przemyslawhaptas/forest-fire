@@ -65,8 +65,8 @@ defmodule ForestFire.SimulationServerUtils do
   end
 
   def example_params do
-    p_lightning_prob = 0.05
-    f_growth_prob = 4.2
+    p_lightning_prob = 0.01
+    f_growth_prob = 1
     {p_lightning_prob, f_growth_prob}
   end
 end
